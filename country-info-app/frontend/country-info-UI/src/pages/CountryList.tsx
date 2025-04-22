@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Country } from "../types/country";
 import { getAllCountries } from "../services/api";
-import CountryCard from "../components/CountryCard";
 import {
   Grid,
   CircularProgress,
@@ -14,59 +13,93 @@ import {
   InputLabel,
 } from "@mui/material";
 
+const CountryCard = lazy(() => import("../components/CountryCard"));
+
+const BATCH_SIZE = 50;
+
 const CountryList = () => {
   const [countries, setCountries] = useState<Country[]>([]);
   const [filteredCountries, setFilteredCountries] = useState<Country[]>([]);
+  const [visibleCountries, setVisibleCountries] = useState<Country[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(BATCH_SIZE);
+
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [regionFilter, setRegionFilter] = useState<string>("");
   const [timezoneFilter, setTimezoneFilter] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Fetch all countries from API
+  // Fetch all countries
   useEffect(() => {
     getAllCountries()
       .then((data) => {
         setCountries(data);
-        setFilteredCountries(data); // Initially show all countries
+        setFilteredCountries(data);
+        setVisibleCountries(data.slice(0, BATCH_SIZE));
       })
       .catch(() => setError("Failed to fetch countries"))
       .finally(() => setLoading(false));
   }, []);
 
-  // Filter countries based on selected filters
+  // Filter countries
   useEffect(() => {
     let filtered = countries;
 
-    // Filter by region
     if (regionFilter) {
       filtered = filtered.filter((country) => country.region === regionFilter);
     }
 
-    // Filter by timezone
     if (timezoneFilter) {
       filtered = filtered.filter((country) =>
         country.timezones.includes(timezoneFilter)
       );
     }
 
-    // Filter by search query (name or capital)
     if (searchQuery) {
-      filtered = filtered.filter((country) =>
-        country.name.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (country) =>
+          country.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          country.capital.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     setFilteredCountries(filtered);
+    setVisibleCountries(filtered.slice(0, BATCH_SIZE));
+    setCurrentIndex(BATCH_SIZE);
   }, [regionFilter, timezoneFilter, searchQuery, countries]);
 
-  const handleRegionChange = (event: React.ChangeEvent<{ value: unknown }>) => {
+  // Handle infinite scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const nearBottom =
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
+
+      if (
+        nearBottom &&
+        !loadingMore &&
+        currentIndex < filteredCountries.length
+      ) {
+        setLoadingMore(true);
+        setTimeout(() => {
+          const nextIndex = currentIndex + BATCH_SIZE;
+          const more = filteredCountries.slice(currentIndex, nextIndex);
+          setVisibleCountries((prev) => [...prev, ...more]);
+          setCurrentIndex(nextIndex);
+          setLoadingMore(false);
+        }, 500);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [filteredCountries, currentIndex, loadingMore]);
+
+  const handleRegionChange = (event: any) => {
     setRegionFilter(event.target.value as string);
   };
 
-  const handleTimezoneChange = (
-    event: React.ChangeEvent<{ value: unknown }>
-  ) => {
+  const handleTimezoneChange = (event: any) => {
     setTimezoneFilter(event.target.value as string);
   };
 
@@ -76,13 +109,7 @@ const CountryList = () => {
 
   if (loading) {
     return (
-      <Box
-        height="100vh"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        textAlign="center"
-      >
+      <Box height="100vh" display="flex" justifyContent="center" alignItems="center">
         <CircularProgress />
       </Box>
     );
@@ -90,13 +117,7 @@ const CountryList = () => {
 
   if (error) {
     return (
-      <Box
-        mt={4}
-        display="flex"
-        justifyContent="center"
-        textAlign="center"
-        alignItems="center"
-      >
+      <Box mt={4} display="flex" justifyContent="center" textAlign="center" alignItems="center">
         <Typography color="error">{error}</Typography>
       </Box>
     );
@@ -104,25 +125,19 @@ const CountryList = () => {
 
   return (
     <Box p={4}>
-      <Box
-        mb={4}
-        position="sticky"
-        top={0}
-        p={2}
-      >
+      {/* Filters */}
+      <Box mb={4} position="sticky" top={0} zIndex={1} bgcolor="#fff" p={2}>
         <Grid container spacing={2} justifyContent="center">
-          {/* Search Bar */}
           <Grid item xs={12} sm={6} md={4}>
             <TextField
               fullWidth
-              label="Search by Name"
+              label="Search by Name/Capital"
               variant="outlined"
               value={searchQuery}
               onChange={handleSearchChange}
             />
           </Grid>
 
-          {/* Region Filter */}
           <Grid item xs={12} sm={4} md={3} width='8rem'>
             <FormControl fullWidth>
               <InputLabel>Region</InputLabel>
@@ -130,7 +145,6 @@ const CountryList = () => {
                 value={regionFilter}
                 onChange={handleRegionChange}
                 label="Region"
-                fullWidth
               >
                 <MenuItem value="">All Regions</MenuItem>
                 <MenuItem value="Asia">Asia</MenuItem>
@@ -142,7 +156,6 @@ const CountryList = () => {
             </FormControl>
           </Grid>
 
-          {/* Timezone Filter */}
           <Grid item xs={12} sm={4} md={3} width='8rem'>
             <FormControl fullWidth>
               <InputLabel>Timezone</InputLabel>
@@ -150,15 +163,13 @@ const CountryList = () => {
                 value={timezoneFilter}
                 onChange={handleTimezoneChange}
                 label="Timezone"
-                fullWidth
               >
                 <MenuItem value="">All Timezones</MenuItem>
-                {/* Dynamically populate timezone options from countries */}
                 {Array.from(
-                  new Set(countries.flatMap((country) => country.timezones))
-                ).map((timezone) => (
-                  <MenuItem key={timezone} value={timezone}>
-                    {timezone}
+                  new Set(countries.flatMap((c) => c.timezones))
+                ).map((tz) => (
+                  <MenuItem key={tz} value={tz}>
+                    {tz}
                   </MenuItem>
                 ))}
               </Select>
@@ -167,14 +178,23 @@ const CountryList = () => {
         </Grid>
       </Box>
 
-      {/* Display filtered countries */}
+      {/* Country Cards */}
       <Grid container spacing={2} justifyContent="center">
-        {filteredCountries.map((country) => (
+        {visibleCountries.map((country) => (
           <Grid item key={country.cca2} xs={12} sm={6} md={4} lg={2.4}>
-            <CountryCard country={country} />
+            <Suspense fallback={<div>Loading...</div>}>
+              <CountryCard country={country} />
+            </Suspense>
           </Grid>
         ))}
       </Grid>
+
+      {/* Loading more */}
+      {loadingMore && (
+        <Box mt={4} textAlign="center">
+          <Typography variant="body1">Loading...</Typography>
+        </Box>
+      )}
     </Box>
   );
 };

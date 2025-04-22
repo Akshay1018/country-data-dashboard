@@ -4,4 +4,6 @@ export interface Country {
     region: string;
     timezones: string[];
     cca2: string;
+    capital: string
+    code: string
   }

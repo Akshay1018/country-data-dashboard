@@ -9,12 +9,12 @@ export const getAllCountries = async () => {
 };
 
 export const getCountryByCode = async (code: string) => {
-  const res = await axios.get(`${API_BASE}/countries/${code}`);
+  const res = await axios.get(`${API_BASE}/api/country/${code}`);
   return res.data;
 };
 
 export const getCountriesByRegion = async (region: string) => {
-  const res = await axios.get(`${API_BASE}/countries/region/${region}`);
+  const res = await axios.get(`${API_BASE}/api/country/region/${region}`);
   return res.data;
 };
 

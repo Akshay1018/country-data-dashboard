@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Card, CardContent, Typography, CardMedia } from "@mui/material";
 import { Country } from "../types/country";
 
@@ -57,21 +58,32 @@ const CountryCard = ({ country }: Props) => {
   };
 
   return (
-    <Card sx={{ height: '100%', minHeight: 250, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border:'1px solid #6666' }}>
-      <CardMedia
-        component="img"
-        height="150"
-        image={country.flag}
-        alt={country.name}
-      />
-      <CardContent>
-        <Typography variant="h6">{country.name}</Typography>
-        <Typography variant="body2">Region: {country.region}</Typography>
-        <Typography variant="body2">
-          Time: {getLocalTime(country.timezones?.[0])}
-        </Typography>
-      </CardContent>
-    </Card>
+    <Link to={`/country/${country.code}`} style={{ textDecoration: "none" }}>
+      <Card
+        sx={{
+          height: "100%",
+          minHeight: 250,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          border: "1px solid #6666",
+        }}
+      >
+        <CardMedia
+          component="img"
+          height="150"
+          image={country.flag}
+          alt={country.name}
+        />
+        <CardContent>
+          <Typography variant="h6">{country.name}</Typography>
+          <Typography variant="body2">Region: {country.region}</Typography>
+          <Typography variant="body2">
+            Time: {getLocalTime(country.timezones?.[0])}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Link>
   );
 };
 
