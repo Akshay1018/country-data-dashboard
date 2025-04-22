@@ -164,6 +164,6 @@ npm run dev
 
 ### Screenshots
 
-![App Screenshot](./frontend/src/assets/screenshot1.png)
-![App Screenshot](./frontend/src/assets/screenshot2.png)
-![App Screenshot](./frontend/src/assets/screenshot3.png)
+![App Screenshot](./country-info-app/frontend/src/assets/screenshot1.png)
+![App Screenshot](./country-info-app/frontend/src/assets/screenshot2.png)
+![App Screenshot](./country-info-app/frontend/src/assets/screenshot3.png)
