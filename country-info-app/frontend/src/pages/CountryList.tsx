@@ -42,7 +42,6 @@ const CountryList = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  // Filter countries
   useEffect(() => {
     let filtered = countries;
 
@@ -125,7 +124,6 @@ const CountryList = () => {
 
   return (
     <Box p={4}>
-      {/* Filters */}
       <Box mb={4} position="sticky" top={0} zIndex={1} bgcolor="#fff" p={2}>
         <Grid container spacing={2} justifyContent="center">
           <Grid item xs={12} sm={6} md={4}>
@@ -178,7 +176,6 @@ const CountryList = () => {
         </Grid>
       </Box>
 
-      {/* Country Cards */}
       <Grid container spacing={2} justifyContent="center">
         {visibleCountries.map((country) => (
           <Grid item key={country.cca2} xs={12} sm={6} md={4} lg={2.4}>
@@ -189,7 +186,6 @@ const CountryList = () => {
         ))}
       </Grid>
 
-      {/* Loading more */}
       {loadingMore && (
         <Box mt={4} textAlign="center">
           <Typography variant="body1">Loading...</Typography>
