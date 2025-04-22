@@ -159,3 +159,11 @@ npm run dev
 cd country-info-app/frontend/country-info-UI
 npm install
 npm run dev
+
+```
+
+### Screenshots
+
+![App Screenshot](./frontend/src/assets/screenshot1.png)
+![App Screenshot](./frontend/src/assets/screenshot2.png)
+![App Screenshot](./frontend/src/assets/screenshot3.png)
