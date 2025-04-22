@@ -147,6 +147,15 @@ Let me know if you'd like a GIF demo or badge section to go with this!
 ### 🔧 Backend Setup
 
 ```bash
-cd backend
+cd country-info-app/backend
+npm install
+npm run dev
+
+```
+
+### 🔧 Frontend Setup
+
+```bash
+cd country-info-app/frontend/country-info-UI
 npm install
 npm run dev
