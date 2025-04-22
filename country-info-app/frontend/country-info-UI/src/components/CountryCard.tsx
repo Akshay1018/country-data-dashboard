@@ -57,7 +57,7 @@ const CountryCard = ({ country }: Props) => {
   };
 
   return (
-    <Card sx={{ height: '100%', minHeight: 250, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+    <Card sx={{ height: '100%', minHeight: 250, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border:'1px solid #6666' }}>
       <CardMedia
         component="img"
         height="150"
