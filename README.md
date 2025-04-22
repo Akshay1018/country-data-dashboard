@@ -35,6 +35,8 @@ country-explorer/
 │
 └── README.md                   # Project documentation
 
+```
+
 
 ## 🚀 Features
 
